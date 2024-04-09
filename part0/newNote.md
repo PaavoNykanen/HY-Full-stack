@@ -74,9 +74,14 @@ sequenceDiagram
 User creates a new note in the single page app at [https://studies.cs.helsinki.fi/exampleapp/notes](https://studies.cs.helsinki.fi/exampleapp/spa)
 
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+sequenceDiagram
+    participant browser
+    participant server
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa payload: {"content":"Testi :-)","date":"2024-04-09T17:17:38.579Z"}
+    activate server
+    server-->>browser: {"message":"note created"}
+    deactivate server
+
+    Note right of browser: The browser executes the onSubmit function that adds the created note to the rendered notes list and rerenders the notes list. It also sends the new note to the server.
 ```
