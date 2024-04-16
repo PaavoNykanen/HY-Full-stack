@@ -5,17 +5,50 @@ const App = () => {
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
+  const [all, setAll] = useState(0)
+  const [average, setAverage] = useState(0)
+  const [positive, setPositive] = useState(0)
+
+  const handleGoodFeedback = () => {
+    const newGood = good + 1
+    const newAll = all + 1
+    setGood(newGood)
+    setAll(newAll)
+    setAverage((newGood - bad) / newAll) // No need to calculate with neutral, since its value is 0
+    setPositive((newGood / newAll) * 100)
+  }
+
+  const handleNeutralFeedback = () => {
+    const newNeutral = neutral + 1
+    const newAll = all + 1
+    setNeutral(newNeutral)
+    setAll(newAll)
+    setAverage((good - bad) / newAll)
+    setPositive((good / newAll) * 100)
+  }
+
+  const handleBadFeedback = () => {
+    const newBad = bad + 1
+    const newAll = all + 1
+    setBad(newBad)
+    setAll(newAll)
+    setAverage((good - newBad) / newAll)
+    setPositive((good / newAll) * 100)
+  }
 
   return (
     <div>
       <h1>give feedback</h1>
-      <button onClick={() => setGood(good + 1)}>good</button>
-      <button onClick={() => setNeutral(neutral + 1)}>neutral</button>
-      <button onClick={() => setBad(bad + 1)}>bad</button>
+      <button onClick={() => handleGoodFeedback()}>good</button>
+      <button onClick={() => handleNeutralFeedback()}>neutral</button>
+      <button onClick={() => handleBadFeedback()}>bad</button>
       <h1>statistics</h1>
       <p>good {good}</p>
       <p>neutral {neutral}</p>
       <p>bad {bad}</p>
+      <p>all {all}</p>
+      <p>average {average}</p>
+      <p>positive {positive} %</p>
     </div>
   )
 }
