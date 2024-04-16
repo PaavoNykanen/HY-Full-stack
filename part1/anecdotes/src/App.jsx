@@ -13,15 +13,28 @@ const App = () => {
   ])
    
   const [selected, setSelected] = useState(0)
+  const [highestVoteIndex, setHighestVoteIndex] = useState(0)
 
   const handleVote = () => {
     const newAnecdotes = [...anecdotes]
     newAnecdotes[selected].grade += 1
     setAnecdotes(newAnecdotes)
+
+    // Find and set new highest grade index
+    let highestGrade = 0
+    let highestGradeIndex = 0
+    anecdotes.forEach((anecdote, index) => {
+      if (anecdote.grade > highestGrade) {
+        highestGrade = anecdote.grade
+        highestGradeIndex = index
+      }
+    })
+    setHighestVoteIndex(highestGradeIndex)
   }
 
   return (
     <div>
+      <h1>Anecdote of the day</h1>
       <p>
         {anecdotes[selected].text}
       </p>
@@ -35,6 +48,13 @@ const App = () => {
         <button onClick={() => setSelected(Math.floor(Math.random() * anecdotes.length))}>
           Next anecdote
         </button>
+      </p>
+      <h1>Anecdote with most votes</h1>
+      <p>
+        {anecdotes[highestVoteIndex].text}
+      </p>
+      <p>
+        has {anecdotes[highestVoteIndex].grade} votes
       </p>
     </div>
   )
