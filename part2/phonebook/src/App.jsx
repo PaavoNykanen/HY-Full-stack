@@ -61,7 +61,8 @@ const App = () => {
       alert(`${newName} is already added to phonebook`)
       return
     }
-    const newPersons = persons.concat({ name: newName, number: newNumber})
+    const newPerson = { name: newName, number: newNumber}
+    const newPersons = persons.concat(newPerson)
     setPersons(newPersons)
     setFilteredPersons(
       newPersons.filter(person =>
@@ -72,6 +73,11 @@ const App = () => {
     )
     setNewName('')
     setNewNumber('')
+
+    axios.post('http://localhost:3001/persons', newPerson)
+      .then(response => {
+        console.log(response)
+      })
   }
 
   useEffect(() => {
