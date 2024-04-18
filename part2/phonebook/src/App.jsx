@@ -2,12 +2,23 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import personService from './services/persons'
 
+const Notification = ({ message, styles }) => {
+  if (!message) {
+    return null
+  }
+
+  return (
+    <div style={styles}>
+      {message}
+    </div>
+  )
+}
+
 const Filter = ({ filterString, changeFilterString }) => (
   <div>
     filter shown with: <input value={filterString} onChange={changeFilterString} />
   </div>
 )
-
 
 const PersonForm = ({ newName, changeName, newNumber, changeNumber, saveName }) => (
   <form>
@@ -38,6 +49,9 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterString, setFilterString] = useState('')
+  const [errorMessage, setErrorMessage] = useState(undefined)
+  const [successMessage, setSuccessMessage] = useState(undefined)
+
 
   const changeName = (event) => {
     setNewName(event.target.value)
@@ -77,6 +91,10 @@ const App = () => {
               )
             )
           )
+          setSuccessMessage(`Updated ${newPerson.name}`)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000)
         })
       } else {
         return
@@ -95,6 +113,10 @@ const App = () => {
               )
             )
           )
+          setSuccessMessage(`Added ${newPerson.name}`)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000)
         })
     }
 
@@ -105,7 +127,6 @@ const App = () => {
   const deletePerson = (person) => {
     console.log(person)
     if (window.confirm(`Delete ${person.name}?`)) {
-
       personService.deletePerson(person.id)
       .then(data => {
         console.log(data)
@@ -118,6 +139,11 @@ const App = () => {
             )
           )
         )
+      }).catch(error => {
+        setErrorMessage(`Information of ${person.name} has already been removed from the server`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
       })
     }
   }
@@ -142,7 +168,31 @@ const App = () => {
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
+      <Notification 
+        styles={{
+          color: 'red',
+          background: 'lightgrey',
+          fontSize: 20,
+          borderStyle: 'solid',
+          borderRadius: 5,
+          padding: 10,
+          marginBottom: 10,
+        }} 
+        message={errorMessage} 
+      />
+      <Notification
+        styles={{
+          color: 'green',
+          background: 'lightgrey',
+          fontSize: 20,
+          borderStyle: 'solid',
+          borderRadius: 5,
+          padding: 10,
+          marginBottom: 10,
+        }}
+        message={successMessage} 
+      />
       <Filter filterString={filterString} changeFilterString={changeFilterString} />
       <h3>add a new</h3>
       <PersonForm 
