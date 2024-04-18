@@ -23,9 +23,12 @@ const PersonForm = ({ newName, changeName, newNumber, changeNumber, saveName }) 
   </form>
 )
 
-const Persons = ({ persons }) => (
+const Persons = ({ persons, deletePerson }) => (
   persons.map(person => (
-    <div key={person.name}>{person.name} {person.number}</div>
+    <div key={person.name}>
+      {person.name} {person.number}
+      <button onClick={() => deletePerson(person)}>delete</button>
+    </div>
   ))
 )
 
@@ -81,6 +84,26 @@ const App = () => {
       })
   }
 
+  const deletePerson = (person) => {
+    console.log(person)
+    if (window.confirm(`Delete ${person.name}?`)) {
+
+      personService.deletePerson(person.id)
+      .then(data => {
+        console.log(data)
+        const newPersons = persons.filter(p => p.id !== person.id)
+        setPersons(newPersons)
+        setFilteredPersons(
+          newPersons.filter(person =>
+             person.name.toLowerCase()
+              .includes(filterString.toLowerCase()
+            )
+          )
+        )
+      })
+    }
+  }
+
   useEffect(() => {
     console.log('effect')
     personService.getAll()
@@ -113,7 +136,7 @@ const App = () => {
      />
       
       <h2>Numbers</h2>
-      <Persons persons={filteredPersons} />
+      <Persons persons={filteredPersons} deletePerson={deletePerson} />
     </div>
   )
 }
