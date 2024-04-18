@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 const Filter = ({ filterString, changeFilterString }) => (
   <div>
@@ -28,13 +29,8 @@ const Persons = ({ persons }) => (
 )
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { 
-      name: 'Arto Hellas',
-      number: "123-456789",
-    }
-  ])
-  const [filteredPersons, setFilteredPersons] = useState(persons)
+  const [persons, setPersons] = useState([])
+  const [filteredPersons, setFilteredPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterString, setFilterString] = useState('')
@@ -77,6 +73,24 @@ const App = () => {
     setNewName('')
     setNewNumber('')
   }
+
+  useEffect(() => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('promise fulfilled')
+        const newPersons = response.data
+        setPersons(newPersons)
+        setFilteredPersons(
+          newPersons.filter(person =>
+             person.name.toLowerCase()
+              .includes(filterString.toLowerCase()
+            )
+          )
+        )
+      })
+  }, [])
 
 
   return (
