@@ -60,28 +60,46 @@ const App = () => {
   
   const saveName = (event) => {
     event.preventDefault()
-    const personExists = persons.some(person => person.name === newName)
+    const newPerson = { name: newName, number: newNumber }
+    const personExists = persons.find(person => person.name === newPerson.name)
     if (personExists) {
-      alert(`${newName} is already added to phonebook`)
-      return
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        personService.updatePerson({...personExists, number: newNumber})
+          .then(data => {
+          console.log(data)
+          // Update the person in the list of persons
+          const newPersons = persons.map(person => person.id === data.id ? data : person)
+          setPersons(newPersons)
+          setFilteredPersons(
+            newPersons.filter(person =>
+               person.name.toLowerCase()
+                .includes(filterString.toLowerCase()
+              )
+            )
+          )
+        })
+      } else {
+        return
+      }
+    } else {
+      personService.create(newPerson)
+        .then(data => {
+          console.log(data)
+          // Add new person to the list of persons
+          const newPersons = persons.concat(newPerson)
+          setPersons(newPersons)
+          setFilteredPersons(
+            newPersons.filter(person =>
+               person.name.toLowerCase()
+                .includes(filterString.toLowerCase()
+              )
+            )
+          )
+        })
     }
-    const newPerson = { name: newName, number: newNumber}
-    const newPersons = persons.concat(newPerson)
-    setPersons(newPersons)
-    setFilteredPersons(
-      newPersons.filter(person =>
-         person.name.toLowerCase()
-          .includes(filterString.toLowerCase()
-        )
-      )
-    )
+
     setNewName('')
     setNewNumber('')
-
-    personService.create(newPerson)
-      .then(data => {
-        console.log(data)
-      })
   }
 
   const deletePerson = (person) => {
