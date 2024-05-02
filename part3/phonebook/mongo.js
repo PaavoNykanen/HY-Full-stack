@@ -36,8 +36,8 @@ if (name && phone) {
 } else {
     Person.find({}).then(result => {
         console.log('phonebook:')
-        result.forEach(phoneNumber => {
-          console.log(`${phoneNumber.name} ${phoneNumber.number}`)
+        result.forEach(person => {
+          console.log(`${person.name} ${person.number}`)
         })
         mongoose.connection.close()
       })
