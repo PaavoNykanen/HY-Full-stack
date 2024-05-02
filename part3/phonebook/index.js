@@ -81,38 +81,23 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-    const body = request.body
+  const body = request.body
 
-    if (!body.name) {
-        return response.status(400).json({ 
-          error: 'name is missing'
-        })
-    }
+  if (!body.name || !body.number) {
+    return response.status(400).json({ error: 'Name or number is invalid' })
+  }
 
-    if (persons.find((person) => person.name === body.name)) {
-        return response.status(400).json({ 
-          error: 'name must be unique'
-        })
-    }
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
 
-    if (!body.number) {
-        return response.status(400).json({ 
-          error: 'number is missing' 
-        })
-    }
-
-    const person = {
-      name: body.name,
-      number: body.number,
-      id: generateId(),
-    }
-
-    persons = persons.concat(person)
-
-    response.json(person)
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
   
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
