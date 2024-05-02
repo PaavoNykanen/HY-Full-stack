@@ -95,6 +95,12 @@ const App = () => {
           setTimeout(() => {
             setSuccessMessage(null)
           }, 5000)
+        }).catch(error => {
+          console.log(error.response.data.error)
+          setErrorMessage(error.response.data.error)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000)
         })
       } else {
         return
@@ -114,6 +120,12 @@ const App = () => {
             )
           )
           setSuccessMessage(`Added ${newPerson.name}`)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000)
+        }).catch(error => {
+          console.log(error.response.data.error)
+          setErrorMessage(error.response.data.error)
           setTimeout(() => {
             setSuccessMessage(null)
           }, 5000)
