@@ -99,7 +99,7 @@ const App = () => {
           console.log(error.response.data.error)
           setErrorMessage(error.response.data.error)
           setTimeout(() => {
-            setSuccessMessage(null)
+            setErrorMessage(null)
           }, 5000)
         })
       } else {
@@ -127,7 +127,7 @@ const App = () => {
           console.log(error.response.data.error)
           setErrorMessage(error.response.data.error)
           setTimeout(() => {
-            setSuccessMessage(null)
+            setErrorMessage(null)
           }, 5000)
         })
     }
