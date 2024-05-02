@@ -55,10 +55,12 @@ app.get('/', (request, response) => {
 
 app.get('/info', (request, response) => {
     const start = new Date();
-    response.send(`
-        <p>Phonebook has info for ${persons.length} people</p>
+    Person.find({}).then(people => {
+      response.send(`
+        <p>Phonebook has info for ${people.length} people</p>
         <p>${start.toString()}</p>
     `)
+    })
 })
   
 app.get('/api/persons', (request, response) => {
@@ -74,10 +76,11 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(person => person.id !== id)
-  
+  Person.findByIdAndDelete(request.params.id)
+  .then(result => {
     response.status(204).end()
+  })
+  .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
