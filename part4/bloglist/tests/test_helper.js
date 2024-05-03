@@ -11,7 +11,7 @@ const initialBlogs = [
     title: 'Test Blog 2',
     author: 'Test Author 2',
     url: 'blog.fi',
-    likes: 0
+    likes: 1
   }
 ]
 

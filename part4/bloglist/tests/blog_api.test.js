@@ -5,6 +5,7 @@ const supertest = require('supertest')
 const Blog = require('../models/blog')
 const helper = require('./test_helper')
 const app = require('../app')
+const blog = require('../models/blog')
 const api = supertest(app)
 
 
@@ -156,7 +157,55 @@ describe('blog api', () => {
       assert(!titles.includes('Blog to delete'))
 
     })
+  })
 
+  describe('updating a blog', () => {
+
+    test('is successful with a valid id', async () => {
+      const blogsAfterSetup = await helper.blogsInDb()
+      const blogToUpdate = blogsAfterSetup[0]
+      const newBlog = {
+        title: 'Updated Title',
+      }
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      // New blogs were not added, only modified, so the length should be the same
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+      // Check that the blog was updated
+      assert(updatedBlog.body.title === newBlog.title)
+
+      // New title is in, old is not
+      const titles = blogsAtEnd.map(b => b.title)
+      assert(titles.includes(newBlog.title))
+      assert(!titles.includes(blogToUpdate.title))
+    })
+
+    test('is successful for adding one like', async () => {
+      const blogsAfterSetup = await helper.blogsInDb()
+      const blogToUpdate = blogsAfterSetup[0]
+      const newBlog = {
+        likes: blogToUpdate.likes + 1,
+      }
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      // Check that the blog was updated
+      assert(updatedBlog.body.likes === blogToUpdate.likes + 1)
+
+      // Likes exist in the updated blogs
+      const blogsAtEnd = await helper.blogsInDb()
+      const likes = blogsAtEnd.map(b => b.likes)
+      assert(likes.includes(blogToUpdate.likes + 1))
+    })
   })
 })
 
