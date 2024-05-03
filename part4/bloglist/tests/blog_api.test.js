@@ -7,17 +7,18 @@ const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
 
-  const blogObjects = helper.initialBlogs.map(blog => new Blog(blog))
-  const promiseArray = blogObjects.map(blog => blog.save())
-  await Promise.all(promiseArray)
-})
 
 describe('blog api', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
 
-  test('includes two blogs', async () => {
+    const blogObjects = helper.initialBlogs.map(blog => new Blog(blog))
+    const promiseArray = blogObjects.map(blog => blog.save())
+    await Promise.all(promiseArray)
+  })
+
+  test('includes two blogs initially', async () => {
     const response = await api.get('/api/blogs')
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length)
@@ -31,93 +32,131 @@ describe('blog api', () => {
     })
   })
 
-  test('can add blogs', async () => {
-    const newBlog = {
-      title: 'Test Blog 3',
-      author: 'Test Author 3',
-      url: 'test.url.com',
-      likes: 1000
-    }
+  describe('viewing a specific blog', () => {
+    test('can add blogs', async () => {
+      const newBlog = {
+        title: 'Test Blog 3',
+        author: 'Test Author 3',
+        url: 'test.url.com',
+        likes: 1000
+      }
 
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
-    const titles = blogsAtEnd.map(b => b.title)
-    assert(titles.includes('Test Blog 3'))
+      const titles = blogsAtEnd.map(b => b.title)
+      assert(titles.includes('Test Blog 3'))
 
-    const authors = blogsAtEnd.map(b => b.author)
-    assert(authors.includes('Test Author 3'))
+      const authors = blogsAtEnd.map(b => b.author)
+      assert(authors.includes('Test Author 3'))
 
-    const urls = blogsAtEnd.map(b => b.url)
-    assert(urls.includes('test.url.com'))
+      const urls = blogsAtEnd.map(b => b.url)
+      assert(urls.includes('test.url.com'))
 
-    const likes = blogsAtEnd.map(b => b.likes)
-    assert(likes.includes(1000))
+      const likes = blogsAtEnd.map(b => b.likes)
+      assert(likes.includes(1000))
+    })
+  })
+  describe('creating blogs', () => {
+    test('defaults blog to 0 likes if the property is missing', async () => {
+      const newBlog = {
+        title: 'Test Blog 3',
+        author: 'Test Author 3',
+        url: 'test.url.com',
+      }
+
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+      assert(addedBlog.body.likes === 0)
+    })
+
+    test('returns code 400 if title is missing', async () => {
+      const newBlog = {
+        author: 'Test Author 3',
+        url: 'test.url.com',
+      }
+
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+        .expect({ error: 'title or url missing' })
+
+      // Length is not increased because the blog is not added
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+      assert(addedBlog.status === 400)
+    })
+
+    test('returns code 400 if url is missing', async () => {
+      const newBlog = {
+        title: 'Test Blog 3',
+        author: 'Test Author 3',
+      }
+
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+        .expect({ error: 'title or url missing' })
+
+      // Length is not increased because the blog is not added
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+      assert(addedBlog.status === 400)
+    })
   })
 
-  test('defaults blog to 0 likes if the property is missing', async () => {
-    const newBlog = {
-      title: 'Test Blog 3',
-      author: 'Test Author 3',
-      url: 'test.url.com',
-    }
+  describe('deleting a blog', () => {
 
-    const addedBlog = await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
+    test('is successful with a valid id', async () => {
+      // Add blog to be deleteted and check that its added
+      const newBlog = {
+        title: 'Blog to delete',
+        author: 'Delete Author',
+        url: 'delete.url.com',
+      }
 
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    assert(addedBlog.body.likes === 0)
-  })
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
-  test('returns code 400 if title is missing', async () => {
-    const newBlog = {
-      author: 'Test Author 3',
-      url: 'test.url.com',
-    }
+      const addedBlogId = addedBlog.body.id
+      const deletedBlog = await api
+        .delete(`/api/blogs/${addedBlogId}`)
+        .expect(204)
 
-    const addedBlog = await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
-      .expect({ error: 'title or url missing' })
+      // Check that the blog doesnt exist and db is the same as at the start
+      const blogsAfterDelete = await helper.blogsInDb()
+      assert.strictEqual(blogsAfterDelete.length, helper.initialBlogs.length)
 
-    // Length is not increased because the blog is not added
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+      const titles = blogsAfterDelete.map(b => b.title)
+      assert(!titles.includes('Blog to delete'))
 
-    assert(addedBlog.status === 400)
-  })
+    })
 
-  test('returns code 400 if url is missing', async () => {
-    const newBlog = {
-      title: 'Test Blog 3',
-      author: 'Test Author 3',
-    }
-
-    const addedBlog = await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
-      .expect({ error: 'title or url missing' })
-
-    // Length is not increased because the blog is not added
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
-
-    assert(addedBlog.status === 400)
   })
 })
 
