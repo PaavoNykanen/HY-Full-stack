@@ -79,6 +79,46 @@ describe('blog api', () => {
 
     assert(addedBlog.body.likes === 0)
   })
+
+  test('returns code 400 if title is missing', async () => {
+    const newBlog = {
+      author: 'Test Author 3',
+      url: 'test.url.com',
+    }
+
+    const addedBlog = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+      .expect({ error: 'title or url missing' })
+
+    // Length is not increased because the blog is not added
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+    assert(addedBlog.status === 400)
+  })
+
+  test('returns code 400 if url is missing', async () => {
+    const newBlog = {
+      title: 'Test Blog 3',
+      author: 'Test Author 3',
+    }
+
+    const addedBlog = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+      .expect({ error: 'title or url missing' })
+
+    // Length is not increased because the blog is not added
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+
+    assert(addedBlog.status === 400)
+  })
 })
 
 after(async () => {
