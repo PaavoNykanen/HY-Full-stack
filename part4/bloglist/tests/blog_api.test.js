@@ -60,6 +60,25 @@ describe('blog api', () => {
     const likes = blogsAtEnd.map(b => b.likes)
     assert(likes.includes(1000))
   })
+
+  test('defaults blog to 0 likes if the property is missing', async () => {
+    const newBlog = {
+      title: 'Test Blog 3',
+      author: 'Test Author 3',
+      url: 'test.url.com',
+    }
+
+    const addedBlog = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+    assert(addedBlog.body.likes === 0)
+  })
 })
 
 after(async () => {
