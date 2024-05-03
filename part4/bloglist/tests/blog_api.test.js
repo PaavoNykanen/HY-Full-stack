@@ -17,10 +17,18 @@ beforeEach(async () => {
 
 describe('blog api', () => {
 
-  test('there are two blogs', async () => {
+  test('includes two blogs', async () => {
     const response = await api.get('/api/blogs')
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length)
+  })
+
+  test('items include id property', async () => {
+    const response = await api.get('/api/blogs')
+
+    response.body.forEach(blog => {
+      assert(blog['id'])
+    })
   })
 })
 
