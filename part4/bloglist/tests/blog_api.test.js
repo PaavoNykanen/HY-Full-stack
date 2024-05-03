@@ -30,6 +30,36 @@ describe('blog api', () => {
       assert(blog['id'])
     })
   })
+
+  test('can add blogs', async () => {
+    const newBlog = {
+      title: 'Test Blog 3',
+      author: 'Test Author 3',
+      url: 'test.url.com',
+      likes: 1000
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+    const titles = blogsAtEnd.map(b => b.title)
+    assert(titles.includes('Test Blog 3'))
+
+    const authors = blogsAtEnd.map(b => b.author)
+    assert(authors.includes('Test Author 3'))
+
+    const urls = blogsAtEnd.map(b => b.url)
+    assert(urls.includes('test.url.com'))
+
+    const likes = blogsAtEnd.map(b => b.likes)
+    assert(likes.includes(1000))
+  })
 })
 
 after(async () => {
