@@ -18,6 +18,14 @@ describe('blog api', () => {
     const blogObjects = helper.initialBlogs.map(blog => new Blog(blog))
     const promiseArray = blogObjects.map(blog => blog.save())
     await Promise.all(promiseArray)
+
+    // Create users for auth stuff, using api with post so the password is hashed
+    await User.deleteMany({})
+    const userPromises = helper.initialUsers.map(async user =>
+      await api
+        .post('/api/users')
+        .send(user))
+    await Promise.all(userPromises)
   })
 
   test('includes two blogs initially', async () => {
@@ -35,7 +43,18 @@ describe('blog api', () => {
   })
 
   describe('viewing a specific blog', () => {
+
     test('can add blogs', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
       const newBlog = {
         title: 'Test Blog 3',
         author: 'Test Author 3',
@@ -46,6 +65,7 @@ describe('blog api', () => {
       await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -65,8 +85,17 @@ describe('blog api', () => {
       assert(likes.includes(1000))
     })
   })
+
   describe('creating blogs', () => {
     test('defaults blog to 0 likes if the property is missing', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
       const newBlog = {
         title: 'Test Blog 3',
         author: 'Test Author 3',
@@ -76,6 +105,7 @@ describe('blog api', () => {
       const addedBlog = await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -86,6 +116,14 @@ describe('blog api', () => {
     })
 
     test('returns code 400 if title is missing', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
       const newBlog = {
         author: 'Test Author 3',
         url: 'test.url.com',
@@ -94,6 +132,7 @@ describe('blog api', () => {
       const addedBlog = await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(400)
         .expect('Content-Type', /application\/json/)
         .expect({ error: 'title or url missing' })
@@ -106,6 +145,14 @@ describe('blog api', () => {
     })
 
     test('returns code 400 if url is missing', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
       const newBlog = {
         title: 'Test Blog 3',
         author: 'Test Author 3',
@@ -114,6 +161,7 @@ describe('blog api', () => {
       const addedBlog = await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(400)
         .expect('Content-Type', /application\/json/)
         .expect({ error: 'title or url missing' })
@@ -124,11 +172,77 @@ describe('blog api', () => {
 
       assert(addedBlog.status === 400)
     })
+
+    test('fails if auth token is not correct', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
+      const newBlog = {
+        title: 'Test Blog 3',
+        author: 'Test Author 3',
+        url: 'test.url.com',
+      }
+
+      const wrongToken = login.body.token + 'a'
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .set('Authorization', `Bearer ${wrongToken}`)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+        .expect({ error: 'token invalid' })
+
+      // Length is not increased because the blog is not added
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('fails if auth token is not provided', async () => {
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
+      const newBlog = {
+        title: 'Test Blog 3',
+        author: 'Test Author 3',
+        url: 'test.url.com',
+      }
+
+      const addedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        // No auth token here!!
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+        .expect({ error: 'token invalid' })
+
+      // Length is not increased because the blog is not added
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
   })
 
   describe('deleting a blog', () => {
 
     test('is successful with a valid id', async () => {
+      // Deleting user needs to be the one that created the blog, so same auth token
+      const user = {
+        username: 'root',
+        password: 'test'
+      }
+      const login = await api
+        .post('/api/login')
+        .send(user)
+
       // Add blog to be deleteted and check that its added
       const newBlog = {
         title: 'Blog to delete',
@@ -139,6 +253,7 @@ describe('blog api', () => {
       const addedBlog = await api
         .post('/api/blogs')
         .send(newBlog)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -148,6 +263,7 @@ describe('blog api', () => {
       const addedBlogId = addedBlog.body.id
       const deletedBlog = await api
         .delete(`/api/blogs/${addedBlogId}`)
+        .set('Authorization', `Bearer ${login.body.token}`)
         .expect(204)
 
       // Check that the blog doesnt exist and db is the same as at the start
