@@ -299,7 +299,7 @@ describe('when there is initially one user in db', () => {
 
     const usersAtEnd = await helper.usersInDb()
     assert(result.body.error.includes('Given password is invalid'))
-    
+
     // User is not added
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
@@ -321,7 +321,7 @@ describe('when there is initially one user in db', () => {
 
     const usersAtEnd = await helper.usersInDb()
     assert(result.body.error.includes('Given password is invalid'))
-    
+
     // User is not added
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
