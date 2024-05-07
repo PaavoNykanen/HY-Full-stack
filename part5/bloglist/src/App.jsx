@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -8,6 +9,9 @@ const App = () => {
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState(null)
+
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then(b =>
@@ -38,8 +42,16 @@ const App = () => {
       blogService.setToken(user.token)
       setUser(user)
       setPassword('')
+      setSuccessMessage(`Logged in as ${user.username}`)
+      setTimeout(() => {        
+        setSuccessMessage(null)      
+      }, 5000)
     } catch (exception) {
-      console.log('Wrong credentials', exception)      
+      console.log('Wrong credentials', exception)
+      setErrorMessage('wrong username or password')
+      setTimeout(() => {        
+        setErrorMessage(null)      
+      }, 5000)
     }
   }
 
@@ -50,6 +62,10 @@ const App = () => {
     setPassword('')
     blogService.setToken(null)
     window.localStorage.removeItem('loggedBlogAppUser')
+    setSuccessMessage(`Logged out`)
+    setTimeout(() => {        
+      setSuccessMessage(null)      
+    }, 5000)
   }
 
   const LoginForm = () => (
@@ -84,6 +100,15 @@ const App = () => {
       url: event.target[2].value,
     }).then(b => {
       setBlogs(blogs.concat(b))
+      setSuccessMessage(`A new blog ${b.title} by ${b.author} added`)
+      setTimeout(() => {        
+        setSuccessMessage(null)      
+      }, 5000)
+    }).catch(error => {
+      setErrorMessage('Failed to create a new blog')
+      setTimeout(() => {        
+        setErrorMessage(null)      
+      }, 5000)
     })
   }
 
@@ -113,6 +138,8 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={errorMessage} color='red' />
+      <Notification message={successMessage} color='green' />
       {user === null ? (
         <div>
           <h2>log in to application</h2>
