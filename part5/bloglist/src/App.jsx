@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -94,13 +95,12 @@ const App = () => {
     </form> 
   )
 
-  const handleCreateBlog = async (event) => {
-    event.preventDefault()
+  const handleCreateBlog = async (title, author, url) => {
     noteFormRef.current.toggleVisibility()
     blogService.create({
-      title: event.target[0].value,
-      author: event.target[1].value,
-      url: event.target[2].value,
+      title: title,
+      author: author,
+      url: url,
     }).then(b => {
       setBlogs(blogs.concat(b))
       setSuccessMessage(`A new blog ${b.title} by ${b.author} added`)
@@ -114,30 +114,6 @@ const App = () => {
       }, 5000)
     })
   }
-
-  const BlogForm = () => (
-    <form onSubmit={handleCreateBlog}>
-      <div>
-        title:
-          <input
-          type="text"
-        />
-      </div>
-      <div>
-        author:
-          <input
-          type="text"
-        />
-      </div>
-      <div>
-        url:
-          <input
-          type="text"
-        />
-      </div>
-      <button type="submit">create</button>
-    </form> 
-  )
 
   return (
     <div>
@@ -157,7 +133,7 @@ const App = () => {
         </p>
 
         <Togglable buttonLabel="new blog" ref={noteFormRef}>
-          {BlogForm()}
+          <BlogForm createBlog={handleCreateBlog} />
         </Togglable>
 
         {blogs.map(blog =>
