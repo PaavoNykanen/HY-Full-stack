@@ -24,7 +24,7 @@ const create = async newObject => {
 }
 
 const update = async (newObject, id) => {
-  const config = {    
+  const config = {
     headers: {
       Authorization: token
     },
@@ -35,7 +35,7 @@ const update = async (newObject, id) => {
 }
 
 const remove = async (id) => {
-  const config = {    
+  const config = {
     headers: {
       Authorization: token
     },

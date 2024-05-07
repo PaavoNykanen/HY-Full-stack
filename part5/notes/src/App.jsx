@@ -13,8 +13,8 @@ const App = () => {
   const [notes, setNotes] = useState([])
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [username, setUsername] = useState('') 
-  const [password, setPassword] = useState('') 
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [loginVisible, setLoginVisible] = useState(false)
 
@@ -26,7 +26,7 @@ const App = () => {
       })
   }, [])
 
-  useEffect(() => {    
+  useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
@@ -38,19 +38,19 @@ const App = () => {
   const addNote = (noteObject) => {
     noteFormRef.current.toggleVisibility()
     noteService
-    .create(noteObject)
-    .then(returnedNote => {
-      setNotes(notes.concat(returnedNote))
-    })
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+      })
   }
 
   const toggleImportanceOf = id => {
     const note = notes.find(n => n.id === id)
     const changedNote = { ...note, important: !note.important }
-  
+
     noteService
       .update(id, changedNote)
-        .then(returnedNote => {
+      .then(returnedNote => {
         setNotes(notes.map(note => note.id !== id ? note : returnedNote))
       })
       .catch(error => {
@@ -67,14 +67,14 @@ const App = () => {
     setNewNote(event.target.value)
   } */
 
-  const handleLogin = async (event) => {    
-    event.preventDefault()        
-    try {      
-      const user = await loginService.login({        
+  const handleLogin = async (event) => {
+    event.preventDefault()
+    try {
+      const user = await loginService.login({
         username, password,
       })
 
-      window.localStorage.setItem(        
+      window.localStorage.setItem(
         'loggedNoteappUser', JSON.stringify(user)
       )
 
@@ -83,10 +83,10 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      setErrorMessage('Wrong credentials', exception)      
-      setTimeout(() => {        
-        setErrorMessage(null)      
-      }, 5000)    
+      setErrorMessage('Wrong credentials', exception)
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
     }
   }
 
@@ -94,7 +94,7 @@ const App = () => {
     ? notes
     : notes.filter(note => note.important)
 
-    const loginForm = () => {
+  const loginForm = () => {
     const hideWhenVisible = { display: loginVisible ? 'none' : '' }
     const showWhenVisible = { display: loginVisible ? '' : 'none' }
 
@@ -123,7 +123,7 @@ const App = () => {
       <Notification message={errorMessage} />
 
       {!user && loginForm()}
-      {user && 
+      {user &&
         <div>
           <p>{user.name} logged in</p>
           <Togglable buttonLabel="new note" ref={noteFormRef}>
@@ -133,15 +133,15 @@ const App = () => {
           </Togglable>
         </div>
       }
-      
+
       <h2>Notes</h2>
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all' }
         </button>
-      </div>      
+      </div>
       <ul>
-        {notesToShow.map(note => 
+        {notesToShow.map(note =>
           <Note
             key={note.id}
             note={note}

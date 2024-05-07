@@ -9,12 +9,12 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
     borderWidth: 1,
     marginBottom: 5
   }
-  
+
   return (
     <div style={blogStyle}>
       <div>
         {blog.title} {blog.author}
-        <button onClick={() => setVisible(!visible)}>{visible ? "hide" : "view"}</button>
+        <button onClick={() => setVisible(!visible)}>{visible ? 'hide' : 'view'}</button>
       </div>
 
       {visible && (
