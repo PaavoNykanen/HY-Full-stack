@@ -12,7 +12,6 @@ const App = () => {
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState(null)
-
   const [successMessage, setSuccessMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
 
@@ -142,6 +141,23 @@ const App = () => {
     })
   }
 
+  const handleRemoveBlog = async (blog) => {
+    blogService.remove(blog.id)
+      .then(b => {
+      const newBlogs = blogs.filter(b => b.id !== blog.id)
+      setBlogs(newBlogs)
+      setSuccessMessage(`Blog was removed`)
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 5000)
+    }).catch(error => {
+      setErrorMessage('Failed to remove blog')
+      setTimeout(() => {        
+        setErrorMessage(null)      
+      }, 5000)
+    })
+  }
+
   return (
     <div>
       <Notification message={errorMessage} color='red' />
@@ -163,9 +179,14 @@ const App = () => {
           <BlogForm createBlog={handleCreateBlog} />
         </Togglable>
 
-        {blogs.sort((a, b) => a.likes < b.likes)
-          .map(blog =>
-            <Blog key={blog.id} blog={blog} updateBlog={handleUpdateBlog} />
+        {blogs.sort((a, b) => a.likes < b.likes).map(blog =>
+          <Blog 
+            key={blog.id} 
+            blog={blog}
+            user={user} 
+            updateBlog={handleUpdateBlog}
+            removeBlog={handleRemoveBlog}
+          />
         )}
       </div>
       )}
