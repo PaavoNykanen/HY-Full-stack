@@ -142,7 +142,8 @@ const App = () => {
   }
 
   const handleRemoveBlog = async (blog) => {
-    blogService.remove(blog.id)
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) {
+      blogService.remove(blog.id)
       .then(b => {
       const newBlogs = blogs.filter(b => b.id !== blog.id)
       setBlogs(newBlogs)
@@ -153,9 +154,10 @@ const App = () => {
     }).catch(error => {
       setErrorMessage('Failed to remove blog')
       setTimeout(() => {        
-        setErrorMessage(null)      
+        setErrorMessage(null)
       }, 5000)
     })
+    }
   }
 
   return (
