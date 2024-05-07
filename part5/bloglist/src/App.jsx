@@ -74,7 +74,42 @@ const App = () => {
       </div>
       <button type="submit">login</button>
     </form> 
-)
+  )
+
+  const handleCreateBlog = async (event) => {
+    event.preventDefault()
+    blogService.create({
+      title: event.target[0].value,
+      author: event.target[1].value,
+      url: event.target[2].value,
+    }).then(b => {
+      setBlogs(blogs.concat(b))
+    })
+  }
+
+  const BlogForm = () => (
+    <form onSubmit={handleCreateBlog}>
+      <div>
+        title:
+          <input
+          type="text"
+        />
+      </div>
+      <div>
+        author:
+          <input
+          type="text"
+        />
+      </div>
+      <div>
+        url:
+          <input
+          type="text"
+        />
+      </div>
+      <button type="submit">create</button>
+    </form> 
+  )
 
   return (
     <div>
@@ -90,6 +125,10 @@ const App = () => {
           {username} logged in 
           <button onClick={handleLogout}>logout</button>
         </p>
+
+        <h2>create new</h2>
+        {BlogForm()}
+
         {blogs.map(blog =>
           <Blog key={blog.id} blog={blog} />
         )}
