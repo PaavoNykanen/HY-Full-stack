@@ -115,6 +115,33 @@ const App = () => {
     })
   }
 
+  const handleUpdateBlog = async (blog) => {
+    blogService.update({
+      user: blog.user.id,
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: blog.likes + 1,
+    }, blog.id).then(b => {
+      const newBlogs = blogs.map(b => b.id === blog.id ?
+        { 
+          ...b, 
+          likes: b.likes + 1 
+        } 
+        : b)
+      setBlogs(newBlogs)
+      setSuccessMessage(`Blog was updated`)
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 5000)
+    }).catch(error => {
+      setErrorMessage('Failed to update blog')
+      setTimeout(() => {        
+        setErrorMessage(null)      
+      }, 5000)
+    })
+  }
+
   return (
     <div>
       <Notification message={errorMessage} color='red' />
@@ -137,7 +164,7 @@ const App = () => {
         </Togglable>
 
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} updateBlog={handleUpdateBlog} />
         )}
       </div>
       )}
