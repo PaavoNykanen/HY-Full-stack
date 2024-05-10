@@ -11,7 +11,7 @@ const Blog = ({ blog, user, updateBlog, removeBlog }) => {
   }
 
   return (
-    <div style={blogStyle} className='blogContainer'>
+    <div style={blogStyle} className='blogContainer' data-testid={`blog-${blog.title}`}>
       <div>
         {blog.title} {blog.author}
         <button onClick={() => setVisible(!visible)}>{visible ? 'hide' : 'view'}</button>
