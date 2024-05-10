@@ -6,8 +6,8 @@ describe('Blog app', () => {
     await request.post('/api/testing/reset')
     await request.post('/api/users', {
       data: {
-        name: 'test user',
-        username: 'test user',
+        name: 'Test User',
+        username: 'testuser',
         password: 'test'
       }
     })
@@ -21,5 +21,32 @@ describe('Blog app', () => {
     await expect(page.getByRole('button', { name: 'login' })).toBeVisible()
     await expect(page.getByTestId('username')).toBeVisible()
     await expect(page.getByTestId('password')).toBeVisible()
+  })
+
+  describe('Login', () => {
+    test('succeeds with correct credentials', async ({ page }) => {
+        await loginWith(page, 'testuser', 'test')
+    
+        const notificationDiv = await page.locator('.notification')
+        await expect(notificationDiv).toContainText('Logged in as testuser')
+        await expect(notificationDiv).toHaveCSS('border-style', 'solid')    
+        await expect(notificationDiv).toHaveCSS('color', 'rgb(0, 128, 0)') // Green
+    
+        await expect(page.getByText('blogs')).toBeVisible()
+        await expect(page.getByText('testuser logged in')).toBeVisible()
+        await expect(page.getByRole('button', { name: 'logout' })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'login' })).not.toBeVisible()
+    })
+
+    test('fails with wrong credentials', async ({ page }) => {
+        await loginWith(page, 'testuser', 'wrong')
+    
+        const errorDiv = await page.locator('.notification')
+        await expect(errorDiv).toContainText('wrong username or password')
+        await expect(errorDiv).toHaveCSS('border-style', 'solid')    
+        await expect(errorDiv).toHaveCSS('color', 'rgb(255, 0, 0)') // Red
+    
+        await expect(page.getByText('Test User logged in')).not.toBeVisible()
+    })
   })
 })
