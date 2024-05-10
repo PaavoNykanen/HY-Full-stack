@@ -52,4 +52,20 @@ describe('Blog component', () => {
 
   })
 
+  test('like button registers clicks', async () => {
+
+    const component = container.querySelector('.blogContainer')
+    expect(component).toBeDefined()
+
+    const user = userEvent.setup()
+    const viewButton = screen.getByText('view')
+    await user.click(viewButton)
+
+    const likeButton = screen.getByText('like')
+    await likeButton.click(likeButton)
+    await likeButton.click(likeButton)
+
+    expect(likeHandler.mock.calls).toHaveLength(2)
+  })
+
 })
