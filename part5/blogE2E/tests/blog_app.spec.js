@@ -1,5 +1,6 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
 const { loginWith, createBlog } = require('./helper')
+const { before } = require('node:test')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -62,6 +63,22 @@ describe('Blog app', () => {
 
         // Notification
         await expect(page.getByText('A new blog a blog created by playwright by Test User added')).toBeVisible()
+    })
+
+    describe('and a blog exists', () => {
+        beforeEach(async ({ page }) => {
+            await createBlog(page, 'test blog', "Test User", "test.com")
+        })
+
+        test("a blog can be edited aka liked", async ({ page }) => {
+            await page.getByText("view").click()
+            await expect(page.getByText('likes 0')).toBeVisible()
+
+            await page.getByText("like").click()
+            
+            await expect(page.getByText('Blog was updated')).toBeVisible()
+            await expect(page.getByText('likes 1')).toBeVisible()
+        })
     })
   })
 })
